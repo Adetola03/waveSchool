@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Count
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 
 # def index(request):
@@ -138,9 +139,21 @@ def about(request):
     return render(request, 'about.html', context )
 
 def courses(request):
+    course_list = ReleaseCoure.objects.all()
+    paginator = Paginator(course_list, 6)  
     course = ReleaseCoure.objects.all()
+    page = request.GET.get('page')
+    try:
+        courses = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        courses = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        courses = paginator.page(paginator.num_pages)
     context = {
         'course':course,
+        'courses':courses,
     }
     return render(request, 'courses.html', context )
 
